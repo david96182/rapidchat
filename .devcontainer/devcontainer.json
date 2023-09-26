@@ -1,0 +1,31 @@
+{
+    "name": "rapidchat_dev",
+    "dockerComposeFile": [
+        "../local.yml"
+    ],
+    "init": true,
+    "mounts": [
+        {
+            "source": "./.devcontainer/bash_history",
+            "target": "/home/dev-user/.bash_history",
+            "type": "bind"
+        },
+        {
+            "source": "/tmp",
+            "target": "/tmp",
+            "type": "bind"
+        },
+        {
+            "source": "~/.ssh",
+            "target": "/home/dev-user/.ssh",
+            "type": "bind"
+        }
+    ],
+    "overrideCommand": false,
+    "service": "django",
+    "remoteUser": "dev-user",
+    "workspaceFolder": "/app",
+    "customizations": {
+    },
+    "postCreateCommand": "cat .devcontainer/bashrc.override.sh >> ~/.bashrc"
+}
