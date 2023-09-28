@@ -1,5 +1,6 @@
 from allauth.account.forms import SignupForm
 from allauth.socialaccount.forms import SignupForm as SocialSignupForm
+from django import forms
 from django.contrib.auth import forms as admin_forms
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
@@ -31,6 +32,19 @@ class UserSignupForm(SignupForm):
     Default fields will be added automatically.
     Check UserSocialSignupForm for accounts created from social.
     """
+
+    name = forms.CharField(label="Name", max_length=255)
+    last_name = forms.CharField(label="Last name", max_length=255)
+
+    class Meta:
+        model = User
+        fields = ["name"]
+
+    def save(self, request):
+        user = super().save(request)
+        user.name = self.cleaned_data["name"]
+        user.save()
+        return user
 
 
 class UserSocialSignupForm(SocialSignupForm):
