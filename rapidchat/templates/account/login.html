@@ -8,7 +8,6 @@
   {% translate "Sign In" %}
 {% endblock head_title %}
 {% block inner %}
-  <h1>{% translate "Sign In" %}</h1>
   {% get_providers as socialaccount_providers %}
   {% if socialaccount_providers %}
     <p>
@@ -27,17 +26,17 @@
       <div class="login-or">{% translate "or" %}</div>
     </div>
     {% include "socialaccount/snippets/login_extra.html" %}
-  {% else %}
+  {% endif %}
+  <form class="login" method="post" action="{% url 'account_login' %}">
+    <h1 class="title">{% translate "Sign In" %}</h1>
     {% if ACCOUNT_ALLOW_REGISTRATION %}
-      <p>
+      <p class="message">
         {% blocktranslate trimmed %}
           If you have not created an account yet, then please
           <a href="{{ signup_url }}">sign up</a> first.
         {% endblocktranslate %}
       </p>
     {% endif %}
-  {% endif %}
-  <form class="login" method="post" action="{% url 'account_login' %}">
     {% csrf_token %}
     {{ form|crispy }}
     {% if redirect_field_value %}
@@ -45,8 +44,7 @@
              name="{{ redirect_field_name }}"
              value="{{ redirect_field_value }}" />
     {% endif %}
-    <a class="button secondaryAction"
-       href="{% url 'account_reset_password' %}">{% translate "Forgot Password?" %}</a>
-    <button class="primaryAction btn btn-primary" type="submit">{% translate "Sign In" %}</button>
+    <button class="submit" type="submit">{% translate "Sign In" %}</button>
+    <a class="message" href="{% url 'account_reset_password' %}">{% translate "Forgot Password?" %}</a>
   </form>
 {% endblock inner %}

@@ -7,10 +7,10 @@
   {% translate "Account" %}
 {% endblock head_title %}
 {% block inner %}
-  <h1>{% translate "E-mail Addresses" %}</h1>
   {% if user.emailaddress_set.all %}
-    <p>{% translate "The following e-mail addresses are associated with your account:" %}</p>
     <form action="{% url 'account_email' %}" class="email_list" method="post">
+      <h1 class="title">{% translate "E-mail Addresses" %}</h1>
+      <p class="message">{% translate "The following e-mail addresses are associated with your account:" %}</p>
       {% csrf_token %}
       <fieldset class="blockLabels">
         {% for emailaddress in user.emailaddress_set.all %}
@@ -34,14 +34,14 @@
             </label>
           </div>
         {% endfor %}
-        <div class="form-group">
-          <button class="secondaryAction btn btn-primary"
+        <div class="form-group" role="group">
+          <button class="secondaryAction btn btn-primary m-2"
                   type="submit"
                   name="action_primary">{% translate "Make Primary" %}</button>
-          <button class="secondaryAction btn btn-primary"
+          <button class="secondaryAction btn btn-primary m-2"
                   type="submit"
                   name="action_send">{% translate "Re-send Verification" %}</button>
-          <button class="primaryAction btn btn-primary"
+          <button class="primaryAction btn btn-primary m-2"
                   type="submit"
                   name="action_remove">{% translate "Remove" %}</button>
         </div>
@@ -52,8 +52,8 @@
       <strong>{% translate "Warning:" %}</strong> {% translate "You currently do not have any e-mail address set up. You should really add an e-mail address so you can receive notifications, reset your password, etc." %}
     </p>
   {% endif %}
-  <h2>{% translate "Add E-mail Address" %}</h2>
   <form method="post" action="{% url 'account_email' %}" class="add_email">
+    <h2 class="title">{% translate "Add E-mail Address" %}</h2>
     {% csrf_token %}
     {{ form|crispy }}
     <button class="btn btn-primary" name="action_add" type="submit">{% translate "Add E-mail" %}</button>
