@@ -33,8 +33,10 @@ class UserSignupForm(SignupForm):
     Check UserSocialSignupForm for accounts created from social.
     """
 
-    name = forms.CharField(label="Name", max_length=255)
-    last_name = forms.CharField(label="Last name", max_length=255)
+    name = forms.CharField(label="Name", max_length=255, widget=forms.TextInput(attrs={"placeholder": "Name"}))
+    last_name = forms.CharField(
+        label="Last name", max_length=255, widget=forms.TextInput(attrs={"placeholder": "Last name"})
+    )
 
     class Meta:
         model = User
