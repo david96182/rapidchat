@@ -16,7 +16,8 @@ urlpatterns = [
     # User management
     path("users/", include("rapidchat.users.urls", namespace="users")),
     path("accounts/", include("allauth.urls")),
-    # Your stuff: custom urls includes go here
+    # Chats
+    path("chats/", include("rapidchat.chats.urls", namespace="chats")),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 if settings.DEBUG:
     # Static file serving when using Gunicorn + Uvicorn for local web socket development

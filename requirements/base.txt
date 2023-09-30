@@ -21,3 +21,4 @@ django-cors-headers==4.2.0  # https://github.com/adamchainz/django-cors-headers
 # DRF-spectacular for api documentation
 drf-spectacular==0.26.5  # https://github.com/tfranzel/drf-spectacular
 channels==4.0.0
+channels-redis==4.1.0

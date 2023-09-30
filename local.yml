@@ -13,6 +13,7 @@ services:
     container_name: rapidchat_local_django
     depends_on:
       - postgres
+      - redis
     volumes:
       - .:/app:z
     env_file:
@@ -33,6 +34,12 @@ services:
       - rapidchat_local_postgres_data_backups:/backups
     env_file:
       - ./.envs/.local/.postgres
+
+  redis:
+    image: redis:6
+    container_name: rapidchat_local_redis
+    ports:
+      - "6379:6379"
 
   docs:
     image: rapidchat_local_docs
