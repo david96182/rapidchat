@@ -1,5 +1,11 @@
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render
+from django.views.generic import View
 
 
-def chat_view(request):
-    return render(request, "chat/chats.html")
+class ChatsListView(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        return render(request, "chat/chats.html")
+
+
+chats_list_view = ChatsListView.as_view()
