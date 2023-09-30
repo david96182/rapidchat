@@ -1,9 +1,10 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
+from django.shortcuts import render
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
-from django.views.generic import DetailView, RedirectView, UpdateView
+from django.views.generic import DetailView, RedirectView, UpdateView, View
 
 User = get_user_model()
 
@@ -41,3 +42,12 @@ class UserRedirectView(LoginRequiredMixin, RedirectView):
 
 
 user_redirect_view = UserRedirectView.as_view()
+
+
+class UserListView(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        users = User.objects.exclude(id=request.user.id)
+        return render(request, "users/user_list.html", {"users": users})
+
+
+user_list_view = UserListView.as_view()
