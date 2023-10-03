@@ -13,6 +13,8 @@ from pathlib import Path
 
 from django.core.asgi import get_asgi_application
 
+from rapidchat.chats.middleware import TokenAuthMiddleware
+
 # This allows easy placement of apps within the interior
 # rapidchat directory.
 ROOT_DIR = Path(__file__).resolve(strict=True).parent.parent
@@ -36,6 +38,6 @@ from channels.routing import ProtocolTypeRouter, URLRouter  # noqa isort:skip
 application = ProtocolTypeRouter(
     {
         "http": get_asgi_application(),
-        "websocket": URLRouter(rt.websocket_urlpatterns),
+        "websocket": TokenAuthMiddleware(URLRouter(rt.websocket_urlpatterns)),
     }
 )
