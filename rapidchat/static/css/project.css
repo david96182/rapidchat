@@ -220,3 +220,130 @@ form {
     transform: translateY(-0.1em);
   }
 }
+
+/* chats */
+.chat-online {
+    color: #34ce57
+}
+
+.chat-offline {
+    color: #e4606d
+}
+
+.chat-messages {
+    display: flex;
+    flex-direction: column;
+    max-height: 68vh;
+    overflow-y: scroll;
+}
+
+.sticky-bottom {
+  position: sticky;
+  bottom: 0;
+}
+
+.chat-message-left,
+.chat-message-right {
+    display: flex;
+    flex-shrink: 0
+}
+
+.chat-message-left {
+    margin-right: auto
+}
+
+.chat-message-right {
+    flex-direction: row-reverse;
+    margin-left: auto
+}
+.py-3 {
+    padding-top: 1rem!important;
+    padding-bottom: 1rem!important;
+}
+.px-4 {
+    padding-right: 1.5rem!important;
+    padding-left: 1.5rem!important;
+}
+.flex-grow-0 {
+    flex-grow: 0!important;
+}
+.border-top {
+    border-top: 1px solid #dee2e6!important;
+}
+.user-picture-chat {
+  overflow: hidden;
+  object-fit: cover;
+  width: 4em;
+  height: 4rem;
+  border: 4px solid lightgray;
+  border-radius: 999px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: auto;
+  background-color: lightgray;
+}
+.user-picture-chat svg {
+  width: 3.5rem;
+}
+.user-picture-list {
+  overflow: hidden;
+  object-fit: cover;
+  width: 3em;
+  height: 3rem;
+  border: 4px solid lightgray;
+  border-radius: 999px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: auto;
+  background-color: lightgray;
+}
+.user-picture-list svg {
+  width: 2.5rem;
+}
+.full-height {
+    height: 90vh;
+}
+.full-width {
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+.scrollable {
+  overflow-y: auto;
+  max-height: 100%;
+  scrollbar-width: thin;
+  scrollbar-color: #888 #f1f1f1;
+}
+.scrollable::-webkit-scrollbar {
+  width: 5px;
+}
+
+.scrollable::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.scrollable::-webkit-scrollbar-thumb {
+  background: #888;
+}
+
+.scrollable::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+.chat-messages::-webkit-scrollbar {
+   width: 10px;
+}
+
+.chat-messages::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.chat-messages::-webkit-scrollbar-thumb {
+  background: #888;
+}
+
+.chat-messages::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}

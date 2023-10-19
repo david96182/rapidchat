@@ -1,0 +1,22 @@
+<script type="module">
+  import {
+    minidenticonSvg
+  } from 'https://cdn.jsdelivr.net/npm/minidenticons@4.2.0/minidenticons.min.js';
+  window.minidenticonSvg = minidenticonSvg;
+</script>
+{% for conversation in conversations %}
+  <a href="{% url 'chats:conversation' conversation.name %}"
+     class="list-group-item list-group-item-action border-0 {% if forloop.counter|divisibleby:2 %}bg-light{% endif %}">
+    <div class="d-flex align-items-center">
+      <div class="user-picture-list">
+        <minidenticon-svg username="{{ conversation.user }}" saturation="60" lightness="50"></minidenticon-svg>
+      </div>
+      <div class="flex-grow-1 ms-4 d-flex flex-column align-items-start">
+        <h6>
+          <b>{{ conversation.user }}</b>
+        </h6>
+        <small class="text-muted">Online</small>
+      </div>
+    </div>
+  </a>
+{% endfor %}

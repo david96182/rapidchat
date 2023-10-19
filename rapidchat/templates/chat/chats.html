@@ -5,69 +5,24 @@
   {% endblock head_title %}
 {% endblock title %}
 {% block content %}
-  <h1>Chats</h1>
-  {{ room_name|json_script:"room-name" }}
-  <p id="status"></p>
-  <div>
-    <textarea id="chat-log" cols="50" rows="10"></textarea>
-    <br />
-    <input id="chat-message-input" type="text" size="45" />
-    <br />
-    <input id="chat-message-submit" type="button" value="Send" />
-    <input id="chat-username" type="hidden" value="{{ user.username }}" />
-  </div>
-  <script>
-    const roomName = JSON.parse(document.getElementById('room-name').textContent);
-    // Correctly decide between ws:// and wss://
-    var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
-    var ws_path = ws_scheme + '://' + window.location.host + "/ws/chat/";
-    var socket = new WebSocket(ws_path);
-
-    socket.onopen = function(e) {
-      console.log("WebSocket is connected");
-      document.querySelector('#status').innerHTML = ('Connected');
-    };
-
-    socket.onclose = function(e) {
-      console.log("WebSocket is closed");
-      document.querySelector('#status').innerHTML = ('Disconnected');
-    };
-
-    socket.onmessage = function(event) {
-      var data = JSON.parse(event.data);
-      switch (data.type) {
-        case 'chat_message_echo':
-          document.querySelector('#chat-log').value += (data.message + '\n');
-          break;
-        default:
-          console.log(data.message);
-          break;
-      }
-      console.log(data.message);
-    };
-
-    socket.onerror = function(error) {
-      console.log("WebSocket error: " + error);
-      console.log(error);
-    };
-
-    document.querySelector('#chat-message-input').focus();
-    document.querySelector('#chat-message-input').onkeyup = function(e) {
-      if (e.key === 'Enter') { // enter, return
-        document.querySelector('#chat-message-submit').click();
-      }
-    };
-
-    document.querySelector('#chat-message-submit').onclick = function(e) {
-      const messageInputDom = document.querySelector('#chat-message-input');
-      const message = messageInputDom.value;
-      const user = document.querySelector('#chat-username').value;
-      socket.send(JSON.stringify({
-        'type': 'chat_message',
-        'name': user,
-        'message': message
-      }));
-      messageInputDom.value = '';
-    };
-  </script>
+  {% if not conversations %}
+    <h3 class="text-center mt-5">
+      You don't have any conversations, send a message to a <a href="{% url 'users:users_list' %}">user</a> to start chatting.
+    </h3>
+  {% else %}
+    <div class="container-fluid p-0 w-100 m-0 p-0 full-width">
+      <div class="card full-height">
+        <div class="row g-0 full-height">
+          <div class="col-4 col-lg-4 col-xl-2 border-end scrollable">
+            <div class="list-group">{% include "chat/chat_list.html" with conversations=conversations %}</div>
+            <hr class="d-block d-lg-none mt-1 mb-0" />
+          </div>
+          <div class="col-8 col-lg-8 col-xl-10 d-flex align-items-center justify-content-center"
+               id="messageArea">
+            <div class="text-center">Select a chat to start messaging</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endif %}
 {% endblock content %}

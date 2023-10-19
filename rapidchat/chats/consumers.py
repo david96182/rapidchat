@@ -73,7 +73,6 @@ class ChatConsumer(JsonWebsocketConsumer):
         return super().receive_json(content, **kwargs)
 
     def chat_message_echo(self, event):
-        print(event)
         self.send_json(event)
 
     def get_receiver(self):

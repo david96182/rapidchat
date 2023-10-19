@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block title %}
+  {% block head_title %}
+  {% endblock head_title %}
+{% endblock title %}
+{% block content %}
+  <script type="module">
+    import {
+      minidenticonSvg
+    } from 'https://cdn.jsdelivr.net/npm/minidenticons@4.2.0/minidenticons.min.js';
+    window.minidenticonSvg = minidenticonSvg;
+  </script>
+  <div class="container-fluid p-0 w-100 m-0 p-0 full-width">
+    <div class="card full-height d-flex flex-column">
+      <div class="row g-0 full-height flex-grow-1">
+        <div class="col-4 col-lg-4 col-xl-2 border-end scrollable">
+          <div class="list-group">{% include "chat/chat_list.html" with conversations=conversations %}</div>
+          <hr class="d-block d-lg-none mt-1 mb-0" />
+        </div>
+        <div class="col-8 col-lg-8 col-xl-10 d-flex flex-column">
+          <div class="py-2 px-4 border-bottom">
+            <div class="d-flex align-items-center py-1">
+              <div class="position-relative user-picture-chat">
+                <minidenticon-svg username="{{ current_conversation.user }}" saturation="60" lightness="50"></minidenticon-svg>
+              </div>
+              <div class="flex-grow-1 ms-4 d-flex flex-column align-items-start">
+                <h4>
+                  <strong>{{ current_conversation.user }}</strong>
+                </h4>
+                <div class="text-muted small">
+                  <em>Typing...</em>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="position-relative flex-grow-1">
+            <div class="chat-messages p-4"></div>
+          </div>
+          <div class="flex-grow-0 py-3 px-4 border-top sticky-bottom">
+            <div class="input-group">
+              <input id="chat-message-input"
+                     type="text"
+                     class="form-control"
+                     placeholder="Type your message" />
+              <button id="chat-message-submit" class="btn btn-primary">Send</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    var chatMessagesDiv = document.querySelector('.chat-messages');
+    // Correctly decide between ws:// and wss://
+    convName = window.location.pathname.split("/")[2];
+    var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
+    var ws_path = ws_scheme + '://' + window.location.host + "/ws/chat/" + convName + "/";
+    var socket = new WebSocket(ws_path);
+
+    socket.onopen = function(e) {
+      //document.querySelector('#status').innerHTML = ('Connected');
+    };
+
+    socket.onclose = function(e) {
+      //document.querySelector('#status').innerHTML = ('Disconnected');
+    };
+
+    socket.onmessage = function(event) {
+      var data = JSON.parse(event.data);
+      switch (data.type) {
+        case 'chat_message_echo':
+          let timestamp = new Date(data.message.timestamp);
+          let msgtime = timestamp.toLocaleTimeString('en-US', {
+            hour: 'numeric',
+            minute: 'numeric',
+            hour12: true
+          });
+          if (data.name == "{{ user.username }}") {
+            // The message was sent by the current user
+            messageDiv = document.createElement('div');
+            messageDiv.innerHTML = `
+            <div class="chat-message-right pb-4">
+              <div class="flex-shrink-1 bg-light rounded py-2 px-3 mr-3">
+                <div class="font-weight-bold mb-1"><b>You</b></div>
+                ${data.message.content}
+                <div class="text-muted small text-nowrap mt-2">${msgtime}</div>
+              </div>
+            </div>
+            `;
+          } else {
+            // The message was received from the other user
+            messageDiv = document.createElement('div');
+            messageDiv.innerHTML = `
+            <div class="chat-message-left pb-4">
+              <div class="flex-shrink-1 bg-light rounded py-2 px-3 ml-3">
+                <div class="font-weight-bold mb-1"><b>${data.name}</b></div>
+                ${data.message.content}
+                <div class="text-muted small text-nowrap mt-2">${msgtime}</div>
+              </div>
+            </div>
+            `;
+          }
+
+          chatMessagesDiv.appendChild(messageDiv);
+          chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
+          break;
+        default:
+          break;
+      }
+    };
+
+    socket.onerror = function(error) {
+      console.log("WebSocket error: " + error);
+      console.log(error);
+    };
+
+    document.querySelector('#chat-message-input').focus();
+    document.querySelector('#chat-message-input').onkeyup = function(e) {
+      if (e.key === 'Enter') { // enter, return
+        document.querySelector('#chat-message-submit').click();
+      }
+    };
+
+    document.querySelector('#chat-message-submit').onclick = function(e) {
+      const messageInputDom = document.querySelector('#chat-message-input');
+      const message = messageInputDom.value;
+      const user = "{{ user.username }}";
+      socket.send(JSON.stringify({
+        'type': 'chat_message',
+        'name': user,
+        'message': message
+      }));
+      messageInputDom.value = '';
+    };
+  </script>
+{% endblock content %}
