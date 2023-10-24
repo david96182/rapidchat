@@ -49,6 +49,14 @@ class ChatConsumer(JsonWebsocketConsumer):
             self.channel_name,
         )
 
+        messages = self.conversation.messages.all().order_by("-timestamp")[0:50]
+        self.send_json(
+            {
+                "type": "last_50_messages",
+                "messages": MessageSerializer(messages, many=True).data,
+            }
+        )
+
     def disconnect(self, code):
         print("Disconnected!")
         return super().disconnect(code)

@@ -60,6 +60,7 @@
 
     socket.onopen = function(e) {
       //document.querySelector('#status').innerHTML = ('Connected');
+      console.log(e.data);
     };
 
     socket.onclose = function(e) {
@@ -104,6 +105,57 @@
 
           chatMessagesDiv.appendChild(messageDiv);
           chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
+          break;
+        case 'last_50_messages':
+          messages = data.messages;
+          messages.reverse();
+
+          for (let i = 0; i < messages.length; i++) {
+            let messageData = messages[i];
+
+            // Convert the timestamp to a local time string
+            let timestamp = new Date(messageData.timestamp);
+            let msgtime = timestamp.toLocaleTimeString('en-US', {
+              hour: 'numeric',
+              minute: 'numeric',
+              hour12: true
+            });
+
+            let messageDiv;
+
+            // Check if the message was sent by the current user
+            if (messageData.from_user.username == "{{ user.username }}") {
+              messageDiv = document.createElement('div');
+              messageDiv.innerHTML = `
+                <div class="chat-message-right pb-4">
+                  <div class="flex-shrink-1 bg-light rounded py-2 px-3 mr-3">
+                    <div class="font-weight-bold mb-1"><b>You</b></div>
+                      ${messageData.content}
+                    <div class="text-muted small text-nowrap mt-2">${msgtime}</div>
+                  </div>
+                </div>
+              `;
+            } else {
+              // The message was received from the other user
+              messageDiv = document.createElement('div');
+              messageDiv.innerHTML = `
+                <div class="chat-message-left pb-4">
+                  <div class="flex-shrink-1 bg-light rounded py-2 px-3 ml-3">
+                    <div class="font-weight-bold mb-1"><b>${messageData.from_user.username}</b></div>
+                      ${messageData.content}
+                    <div class="text-muted small text-nowrap mt-2">${msgtime}</div>
+                  </div>
+                </div>
+              `;
+            }
+
+            // Append the message to the chatMessagesDiv
+            chatMessagesDiv.appendChild(messageDiv);
+          }
+
+          // Scroll to the bottom of the chatMessagesDiv
+          chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
+
           break;
         default:
           break;
