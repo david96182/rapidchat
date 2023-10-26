@@ -16,10 +16,27 @@ class BaseChatView(LoginRequiredMixin, View):
 
         for conversation in conversations:
             user1, user2 = conversation.name.split("__")
+            conv_info = {}
+            user = None
             if user1 == request.user.username:
-                data.append({"name": conversation.name, "user": user2})
+                user = user2
             elif user2 == request.user.username:
-                data.append({"name": conversation.name, "user": user1})
+                user = user1
+
+            if user:
+                messages = conversation.messages.all().order_by("-timestamp")
+                if not messages.exists():
+                    message = None
+                else:
+                    message = messages[0].content
+                conv_info.update(
+                    {
+                        "user": user,
+                        "name": conversation.name,
+                        "last_message": message,
+                    }
+                )
+                data.append(conv_info)
 
         return data
 

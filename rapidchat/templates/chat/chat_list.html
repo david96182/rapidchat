@@ -15,7 +15,7 @@
         <h6>
           <b>{{ conversation.user }}</b>
         </h6>
-        <small class="text-muted">Online</small>
+        <small class="text-muted">{{ conversation.last_message|truncatechars:15 }}</small>
       </div>
     </div>
   </a>
