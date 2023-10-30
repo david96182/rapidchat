@@ -1,9 +1,10 @@
 from rest_framework.mixins import ListModelMixin, RetrieveModelMixin
 from rest_framework.viewsets import GenericViewSet
 
-from rapidchat.chats.models import Conversation
+from rapidchat.chats.api.paginaters import MessagePagination
+from rapidchat.chats.models import Conversation, Message
 
-from .serializers import ConversationSerializer
+from .serializers import ConversationSerializer, MessageSerializer
 
 
 class ConversationViewSet(ListModelMixin, RetrieveModelMixin, GenericViewSet):
@@ -17,3 +18,20 @@ class ConversationViewSet(ListModelMixin, RetrieveModelMixin, GenericViewSet):
 
     def get_serializer_context(self):
         return {"request": self.request, "user": self.request.user}
+
+
+class MessageViewSet(ListModelMixin, GenericViewSet):
+    serializer_class = MessageSerializer
+    queryset = Message.objects.none()
+    pagination_class = MessagePagination
+
+    def get_queryset(self):
+        conversation_name = self.request.GET.get("conversation")
+        queryset = (
+            Message.objects.filter(
+                conversation__name__contains=self.request.user.username,
+            )
+            .filter(conversation__name=conversation_name)
+            .order_by("-timestamp")
+        )
+        return queryset
