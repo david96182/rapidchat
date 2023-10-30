@@ -104,6 +104,15 @@ class ChatConsumer(JsonWebsocketConsumer):
                     "message": MessageSerializer(message).data,
                 },
             )
+        if message_type == "typing":
+            async_to_sync(self.channel_layer.group_send)(
+                self.conversation_name,
+                {
+                    "type": "typing",
+                    "user": self.user.username,
+                    "typing": content["typing"],
+                },
+            )
         return super().receive_json(content, **kwargs)
 
     def chat_message_echo(self, event):
@@ -120,4 +129,7 @@ class ChatConsumer(JsonWebsocketConsumer):
         self.send_json(event)
 
     def user_leave(self, event):
+        self.send_json(event)
+
+    def typing(self, event):
         self.send_json(event)
