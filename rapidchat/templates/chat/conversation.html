@@ -35,7 +35,7 @@
             </div>
           </div>
           <div class="position-relative flex-grow-1">
-            <div class="chat-messages p-4"></div>
+            <div id="chat-messages" class="chat-messages p-4"></div>
           </div>
           <div class="flex-grow-0 py-3 px-4 border-top sticky-bottom">
             <div class="input-group">
@@ -51,6 +51,8 @@
     </div>
   </div>
   <script>
+    let currentPage = 1;
+    let moreResults = true;
     var chatMessagesDiv = document.querySelector('.chat-messages');
     // Correctly decide between ws:// and wss://
     convName = window.location.pathname.split("/")[2];
@@ -60,7 +62,6 @@
 
     socket.onopen = function(e) {
       //document.querySelector('#status').innerHTML = ('Connected');
-      console.log(e.data);
     };
 
     socket.onclose = function(e) {
@@ -148,13 +149,29 @@
                 </div>
               `;
             }
-
+            if (i === 0) {
+              messageDiv.id = "first-message";
+            }
             // Append the message to the chatMessagesDiv
             chatMessagesDiv.appendChild(messageDiv);
           }
 
           // Scroll to the bottom of the chatMessagesDiv
           chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
+          // Add waypoint to first loaded message div
+          if (messages.length == 50 && data.has_more) {
+            var waypoint = new Waypoint({
+              element: document.getElementById('first-message'),
+              handler: function(direction) {
+                if (direction === 'up') {
+                  loadMoreMessages()
+                }
+              },
+              context: document.querySelector('.chat-messages')
+            })
+          } else {
+            moreResults = false;
+          }
 
           break;
         default:
@@ -185,5 +202,70 @@
       }));
       messageInputDom.value = '';
     };
+
+    function loadMoreMessages() {
+      const chatMessagesDiv = document.querySelector('#chat-messages');
+      const conversationName = window.location.pathname.split("/")[2];
+      let totalHeight = 0;
+      currentPage++;
+      const url = `/api/messages/?conversation=${conversationName}&page=${currentPage}`;
+      if (!moreResults) {
+        return;
+      }
+
+      fetch(url)
+        .then(response => response.json())
+        .then(data => {
+          let messages = data.results;
+
+          let messageDiv;
+          messages.forEach(messageData => {
+            // Convert the timestamp to a local time string
+            let timestamp = new Date(messageData.timestamp);
+            let msgtime = timestamp.toLocaleTimeString('en-US', {
+              hour: 'numeric',
+              minute: 'numeric',
+              hour12: true
+            });
+
+            // Check if the message was sent by the current user
+            if (messageData.from_user.username == "{{ user.username }}") {
+              messageDiv = document.createElement('div');
+              messageDiv.innerHTML = `
+                <div class="chat-message-right pb-4">
+                  <div class="flex-shrink-1 bg-light rounded py-2 px-3 mr-3">
+                    <div class="font-weight-bold mb-1"><b>You</b></div>
+                      ${messageData.content}
+                    <div class="text-muted small text-nowrap mt-2">${msgtime}</div>
+                  </div>
+                </div>
+              `;
+            } else {
+              // The message was received from the other user
+              messageDiv = document.createElement('div');
+              messageDiv.innerHTML = `
+                <div class="chat-message-left pb-4">
+                  <div class="flex-shrink-1 bg-light rounded py-2 px-3 ml-3">
+                    <div class="font-weight-bold mb-1"><b>${messageData.from_user.username}</b></div>
+                      ${messageData.content}
+                    <div class="text-muted small text-nowrap mt-2">${msgtime}</div>
+                  </div>
+                </div>
+              `;
+            }
+            // Append the message to the chatMessagesDiv
+            let firstChild = chatMessagesDiv.firstChild;
+            chatMessagesDiv.insertBefore(messageDiv, firstChild);
+            totalHeight += messageDiv.offsetHeight;
+          });
+          if (messages.length < 50) {
+            moreResults = false;
+          }
+          chatMessagesDiv.scrollTop += totalHeight;
+        })
+        .catch(error => {
+          console.error('Error loading more messages:', error);
+        });
+    }
   </script>
 {% endblock content %}
