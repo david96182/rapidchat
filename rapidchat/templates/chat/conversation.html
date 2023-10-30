@@ -28,9 +28,7 @@
                 <h4>
                   <strong>{{ current_conversation.user }}</strong>
                 </h4>
-                <div class="text-muted small">
-                  <em>Typing...</em>
-                </div>
+                <div id="user-status" class="text-muted small">Offline</div>
               </div>
             </div>
           </div>
@@ -60,7 +58,7 @@
     var ws_path = ws_scheme + '://' + window.location.host + "/ws/chat/" + convName + "/";
     var socket = new WebSocket(ws_path);
 
-    socket.onopen = function(e) {
+    socket.onopen = function(event) {
       //document.querySelector('#status').innerHTML = ('Connected');
     };
 
@@ -173,6 +171,21 @@
             moreResults = false;
           }
 
+          break;
+        case 'user_join':
+          if (data.user != "{{ user.username }}") {
+            document.getElementById('user-status').textContent = 'Online';
+          }
+          break;
+        case 'user_leave':
+          if (data.user != "{{ user.username }}") {
+            document.getElementById('user-status').textContent = 'Offline';
+          }
+          break;
+        case 'online_user_list':
+          if (data.users.length > 0) {
+            document.getElementById('user-status').textContent = 'Online';
+          }
           break;
         default:
           break;
