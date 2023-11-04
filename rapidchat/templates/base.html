@@ -70,7 +70,9 @@
                   <a class="nav-link" href="{% url 'users:users_list' %}">Users</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="{% url 'chats:chats' %}">Chats</a>
+                  <a id="chat-navbar"
+                     class="nav-link position-relative"
+                     href="{% url 'chats:chats' %}">Chats</a>
                 </li>
                 <li class="nav-item">
                   <a class="nav-link"
@@ -126,6 +128,71 @@
       });
     </script>
       {% endcomment %}
+      <script>
+        // Correctly decide between ws:// and wss://
+        var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
+        var ws_path_not = ws_scheme + '://' + window.location.host + "/notifications/";
+        var NotifSocket = new WebSocket(ws_path_not);
+
+        NotifSocket.onopen = function(event) {
+          //console.log("Connected");
+        };
+
+        NotifSocket.onclose = function(e) {
+          //console.log("Disconnected");
+        };
+
+        NotifSocket.onmessage = function(event) {
+          var data = JSON.parse(event.data);
+          var aElement = document.getElementById('chat-navbar');
+          switch (data.type) {
+            case 'unread_count':
+              var existsSpan = aElement.contains(document.getElementById('chat-notif-counter'));
+              if (data.unread_count > 0) {
+                if (existsSpan) {
+                  var notifSpan = document.getElementById('chat-notif-counter');
+                  notifSpan.textContent = data.unread_count;
+                } else {
+                  var spanElement = document.createElement('span');
+
+                  spanElement.style.fontSize = "0.6rem";
+                  spanElement.className = "position-absolute top-5 start-150 translate-middle badge rounded-pill bg-danger";
+                  spanElement.textContent = data.unread_count;
+                  spanElement.id = "chat-notif-counter";
+
+                  aElement.appendChild(spanElement);
+                }
+              } else {
+                if (existsSpan) {
+                  var notifSpan = document.getElementById('chat-notif-counter');
+                  aElement.removeChild(notifSpan);
+                }
+              }
+
+              break;
+            case 'new_message_notification':
+              var existsSpan = aElement.contains(document.getElementById('chat-notif-counter'));
+
+              if (existsSpan) {
+                var notifSpan = document.getElementById('chat-notif-counter');
+                notifSpan.textContent = parseInt(notifSpan.textContent, 0) + 1
+              } else {
+                var spanElement = document.createElement('span');
+
+                spanElement.style.fontSize = "0.6rem";
+                spanElement.className = "position-absolute top-5 start-150 translate-middle badge rounded-pill bg-danger";
+                spanElement.textContent = 1;
+                spanElement.id = "chat-notif-counter";
+
+                aElement.appendChild(spanElement);
+              }
+
+              break;
+            default:
+              break;
+          }
+        }
+      </script>
     {% endblock inline_javascript %}
   </body>
 </html>

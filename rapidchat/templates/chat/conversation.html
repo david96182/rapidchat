@@ -56,10 +56,13 @@
     // Correctly decide between ws:// and wss://
     convName = window.location.pathname.split("/")[2];
     var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
-    var ws_path = ws_scheme + '://' + window.location.host + "/ws/chat/" + convName + "/";
+    var ws_path = ws_scheme + '://' + window.location.host + "/chat/" + convName + "/";
     var socket = new WebSocket(ws_path);
 
     socket.onopen = function(event) {
+      socket.send(JSON.stringify({
+        'type': 'read_messages'
+      }));
       //document.querySelector('#status').innerHTML = ('Connected');
     };
 
@@ -105,6 +108,11 @@
 
           chatMessagesDiv.appendChild(messageDiv);
           chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
+
+          // mark messages as read
+          socket.send(JSON.stringify({
+            'type': 'read_messages'
+          }));
           break;
         case 'last_50_messages':
           messages = data.messages;
