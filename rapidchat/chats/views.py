@@ -1,6 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.views.generic import View
 
 from rapidchat.chats.models import Conversation
@@ -25,6 +25,7 @@ class BaseChatView(LoginRequiredMixin, View):
 
             if user:
                 messages = conversation.messages.all().order_by("-timestamp")
+                unread_count = conversation.messages.all().filter(to_user=request.user.id, read=False).count()
                 if not messages.exists():
                     message = None
                 else:
@@ -34,6 +35,7 @@ class BaseChatView(LoginRequiredMixin, View):
                         "user": user,
                         "name": conversation.name,
                         "last_message": message,
+                        "unread_count": unread_count,
                     }
                 )
                 data.append(conv_info)
@@ -64,6 +66,11 @@ class ConversationView(BaseChatView):
 
         if request.user.username not in [user1, user2]:
             return error_404_view(request)
+
+        if not Conversation.objects.filter(name=conversation_name).exists():
+            conversation_name_temp = "__".join([user2, user1])
+            if Conversation.objects.filter(name=conversation_name_temp).exists():
+                return redirect("/chats/" + conversation_name_temp)
 
         conversation, created = Conversation.objects.get_or_create(name=conversation_name)
 

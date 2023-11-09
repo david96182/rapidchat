@@ -168,7 +168,68 @@
                   aElement.removeChild(notifSpan);
                 }
               }
+              if (window.location.href.indexOf('chats') > -1) {
+                convsNotif = data.conv_notifications.reverse();
 
+                // Get the parent element
+                var parentElement = document.getElementById('chat-list'); // replace 'parent-id' with the actual id of the parent element
+
+                // Loop through each notification
+                convsNotif.forEach(function(notification, index) {
+                  // Find the corresponding a element or create a new one
+                  aElement = document.createElement('a');
+                  lastMessage = notification.last_message;
+                  if (lastMessage.length > 15) {
+                    lastMessage = lastMessage.slice(0, 15) + '...';
+                  }
+
+                  if (notification.unread_count) {
+                    aElement.innerHTML = `
+                      <div class="d-flex align-items-center">
+                        <div class="user-picture-list">
+                          <minidenticon-svg username="${notification.user}" saturation="60" lightness="50"></minidenticon-svg>
+                        </div>
+                        <div class="flex-grow-1 ms-4 d-flex flex-column align-items-start">
+                          <h6>
+                            <b>${notification.user}</b>
+                          </h6>
+                          <small class="text-muted text-break">${lastMessage}</small>
+                        </div>
+                        <span class="badge text-bg-secondary">${notification.unread_count}</span>
+                      </div>
+                    `
+                  } else {
+                    aElement.innerHTML = `
+                      <div class="d-flex align-items-center">
+                        <div class="user-picture-list">
+                          <minidenticon-svg username="${notification.user}" saturation="60" lightness="50"></minidenticon-svg>
+                        </div>
+                        <div class="flex-grow-1 ms-4 d-flex flex-column align-items-start">
+                          <h6>
+                            <b>${notification.user}</b>
+                          </h6>
+                          <small class="text-muted text-break">${lastMessage}</small>
+                        </div>
+                      </div>
+                    `
+                  }
+                  aElement.id = notification.name;
+                  aElement.href = '/chats/' + notification.name;
+                  aElement.classList.add('list-group-item', 'list-group-item-action', 'border-0');
+                  if (index % 2 === 0) {
+                    aElement.classList.add('bg-light');
+                  }
+
+                  // Remove the old a element
+                  var oldElement = document.getElementById(notification.name);
+                  if (oldElement) {
+                    oldElement.remove();
+                  }
+
+                  // Insert the updated a element as the first child
+                  parentElement.insertBefore(aElement, parentElement.firstChild);
+                });
+              }
               break;
             case 'new_message_notification':
               var existsSpan = aElement.contains(document.getElementById('chat-notif-counter'));
@@ -185,6 +246,69 @@
                 spanElement.id = "chat-notif-counter";
 
                 aElement.appendChild(spanElement);
+              }
+
+              if (window.location.href.indexOf('chats') > -1) {
+                convsNotif = data.conv_notifications.reverse();
+
+                // Get the parent element
+                var parentElement = document.getElementById('chat-list'); // replace 'parent-id' with the actual id of the parent element
+
+                // Loop through each notification
+                convsNotif.forEach(function(notification, index) {
+                  // Find the corresponding a element or create a new one
+                  aElement = document.createElement('a');
+                  lastMessage = notification.last_message;
+                  if (lastMessage.length > 15) {
+                    lastMessage = lastMessage.slice(0, 15) + '...';
+                  }
+
+                  if (notification.unread_count) {
+                    aElement.innerHTML = `
+                      <div class="d-flex align-items-center">
+                        <div class="user-picture-list">
+                          <minidenticon-svg username="${notification.user}" saturation="60" lightness="50"></minidenticon-svg>
+                        </div>
+                        <div class="flex-grow-1 ms-4 d-flex flex-column align-items-start">
+                          <h6>
+                            <b>${notification.user}</b>
+                          </h6>
+                          <small class="text-muted text-break">${lastMessage}</small>
+                        </div>
+                        <span class="badge text-bg-secondary">${notification.unread_count}</span>
+                      </div>
+                    `
+                  } else {
+                    aElement.innerHTML = `
+                      <div class="d-flex align-items-center">
+                        <div class="user-picture-list">
+                          <minidenticon-svg username="${notification.user}" saturation="60" lightness="50"></minidenticon-svg>
+                        </div>
+                        <div class="flex-grow-1 ms-4 d-flex flex-column align-items-start">
+                          <h6>
+                            <b>${notification.user}</b>
+                          </h6>
+                          <small class="text-muted text-break">${lastMessage}</small>
+                        </div>
+                      </div>
+                    `
+                  }
+                  aElement.id = notification.name;
+                  aElement.href = '/chats/' + notification.name;
+                  aElement.classList.add('list-group-item', 'list-group-item-action', 'border-0');
+                  if (index % 2 === 0) {
+                    aElement.classList.add('bg-light');
+                  }
+
+                  // Remove the old a element
+                  var oldElement = document.getElementById(notification.name);
+                  if (oldElement) {
+                    oldElement.remove();
+                  }
+
+                  // Insert the updated a element as the first child
+                  parentElement.insertBefore(aElement, parentElement.firstChild);
+                });
               }
 
               break;

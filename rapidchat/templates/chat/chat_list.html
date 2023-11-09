@@ -5,7 +5,8 @@
   window.minidenticonSvg = minidenticonSvg;
 </script>
 {% for conversation in conversations %}
-  <a href="{% url 'chats:conversation' conversation.name %}"
+  <a id="{{ conversation.name }}"
+     href="{% url 'chats:conversation' conversation.name %}"
      class="list-group-item list-group-item-action border-0 {% if forloop.counter|divisibleby:2 %}bg-light{% endif %}">
     <div class="d-flex align-items-center">
       <div class="user-picture-list">
@@ -15,8 +16,11 @@
         <h6>
           <b>{{ conversation.user }}</b>
         </h6>
-        <small class="text-muted">{{ conversation.last_message|truncatechars:15 }}</small>
+        <small class="text-muted text-break">{{ conversation.last_message|truncatechars:15 }}</small>
       </div>
+      {% if conversation.unread_count %}
+        <span class="badge text-bg-secondary">{{ conversation.unread_count }}</span>
+      {% endif %}
     </div>
   </a>
 {% endfor %}

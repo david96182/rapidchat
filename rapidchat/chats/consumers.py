@@ -4,6 +4,7 @@ from uuid import UUID
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import JsonWebsocketConsumer
 from django.contrib.auth import get_user_model
+from django.db.models import OuterRef, Subquery
 
 from rapidchat.chats.api.serializers import MessageSerializer
 from rapidchat.chats.models import Conversation, Message
@@ -19,7 +20,42 @@ class UUIDEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, obj)
 
 
-class ChatConsumer(JsonWebsocketConsumer):
+class BaseConsumer(JsonWebsocketConsumer):
+    def get_conversations_status(self, username, id):
+        conversations = Conversation.objects.all()
+        latest_messages = Message.objects.filter(conversation=OuterRef("pk")).order_by("-timestamp")
+        conversations = conversations.annotate(
+            latest_message_timestamp=Subquery(latest_messages.values("timestamp")[:1])
+        )
+        conversations = conversations.order_by("-latest_message_timestamp")
+
+        conv_notifications = []
+        for conversation in conversations:
+            user1, user2 = conversation.name.split("__")
+            user = None
+            if user1 == username:
+                user = user2
+            elif user2 == username:
+                user = user1
+            if user:
+                messages = conversation.messages.all().order_by("-timestamp")
+                if not messages.exists():
+                    message = None
+                else:
+                    message = messages[0].content
+                unread_count = conversation.messages.all().filter(to_user=id, read=False).count()
+                conv_notifications.append(
+                    {
+                        "user": user2 if user1 == username else user1,
+                        "name": conversation.name,
+                        "last_message": message,
+                        "unread_count": unread_count,
+                    }
+                )
+        return conv_notifications
+
+
+class ChatConsumer(BaseConsumer):
     """
     This consumer is used to show user's online status,
     and send notifications.
@@ -111,6 +147,9 @@ class ChatConsumer(JsonWebsocketConsumer):
                     "type": "new_message_notification",
                     "name": self.user.username,
                     "message": MessageSerializer(message).data,
+                    "conv_notifications": self.get_conversations_status(
+                        self.get_receiver().username, self.get_receiver().id
+                    ),
                 },
             )
 
@@ -135,6 +174,7 @@ class ChatConsumer(JsonWebsocketConsumer):
                 {
                     "type": "unread_count",
                     "unread_count": unread_count,
+                    "conv_notifications": self.get_conversations_status(self.user.username, self.user.id),
                 },
             )
 
@@ -166,7 +206,7 @@ class ChatConsumer(JsonWebsocketConsumer):
         self.send_json(event)
 
 
-class NotificationConsumer(JsonWebsocketConsumer):
+class NotificationConsumer(BaseConsumer):
     def __init__(self, *args, **kwargs):
         super().__init__(args, kwargs)
         self.user = None
@@ -191,6 +231,7 @@ class NotificationConsumer(JsonWebsocketConsumer):
             {
                 "type": "unread_count",
                 "unread_count": unread_count,
+                "conv_notifications": self.get_conversations_status(self.user.username, self.user.id),
             }
         )
 
