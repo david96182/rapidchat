@@ -128,197 +128,199 @@
       });
     </script>
       {% endcomment %}
-      <script>
-        // Correctly decide between ws:// and wss://
-        var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
-        var ws_path_not = ws_scheme + '://' + window.location.host + "/notifications/";
-        var NotifSocket = new WebSocket(ws_path_not);
+      {% if request.user.is_authenticated %}
+        <script>
+          // Correctly decide between ws:// and wss://
+          var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
+          var ws_path_not = ws_scheme + '://' + window.location.host + "/notifications/";
+          var NotifSocket = new WebSocket(ws_path_not);
 
-        NotifSocket.onopen = function(event) {
-          //console.log("Connected");
-        };
+          NotifSocket.onopen = function(event) {
+            //console.log("Connected");
+          };
 
-        NotifSocket.onclose = function(e) {
-          //console.log("Disconnected");
-        };
+          NotifSocket.onclose = function(e) {
+            //console.log("Disconnected");
+          };
 
-        NotifSocket.onmessage = function(event) {
-          var data = JSON.parse(event.data);
-          var aElement = document.getElementById('chat-navbar');
-          switch (data.type) {
-            case 'unread_count':
-              var existsSpan = aElement.contains(document.getElementById('chat-notif-counter'));
-              if (data.unread_count > 0) {
+          NotifSocket.onmessage = function(event) {
+            var data = JSON.parse(event.data);
+            var aElement = document.getElementById('chat-navbar');
+            switch (data.type) {
+              case 'unread_count':
+                var existsSpan = aElement.contains(document.getElementById('chat-notif-counter'));
+                if (data.unread_count > 0) {
+                  if (existsSpan) {
+                    var notifSpan = document.getElementById('chat-notif-counter');
+                    notifSpan.textContent = data.unread_count;
+                  } else {
+                    var spanElement = document.createElement('span');
+
+                    spanElement.style.fontSize = "0.6rem";
+                    spanElement.className = "position-absolute top-5 start-150 translate-middle badge rounded-pill bg-danger";
+                    spanElement.textContent = data.unread_count;
+                    spanElement.id = "chat-notif-counter";
+
+                    aElement.appendChild(spanElement);
+                  }
+                } else {
+                  if (existsSpan) {
+                    var notifSpan = document.getElementById('chat-notif-counter');
+                    aElement.removeChild(notifSpan);
+                  }
+                }
+                if (window.location.href.indexOf('chats') > -1) {
+                  convsNotif = data.conv_notifications.reverse();
+
+                  // Get the parent element
+                  var parentElement = document.getElementById('chat-list'); // replace 'parent-id' with the actual id of the parent element
+
+                  // Loop through each notification
+                  convsNotif.forEach(function(notification, index) {
+                    // Find the corresponding a element or create a new one
+                    aElement = document.createElement('a');
+                    lastMessage = notification.last_message;
+                    if (!lastMessage) {
+                      lastMessage = ''
+                    } else if (lastMessage.length > 15) {
+                      lastMessage = lastMessage.slice(0, 15) + '...';
+                    }
+
+                    if (notification.unread_count) {
+                      aElement.innerHTML = `
+                      <div class="d-flex align-items-center">
+                        <div class="user-picture-list">
+                          <minidenticon-svg username="${notification.user}" saturation="60" lightness="50"></minidenticon-svg>
+                        </div>
+                        <div class="flex-grow-1 ms-4 d-flex flex-column align-items-start">
+                          <h6>
+                            <b>${notification.user}</b>
+                          </h6>
+                          <small class="text-muted text-break">${lastMessage}</small>
+                        </div>
+                        <span class="badge text-bg-secondary">${notification.unread_count}</span>
+                      </div>
+                    `
+                    } else {
+                      aElement.innerHTML = `
+                      <div class="d-flex align-items-center">
+                        <div class="user-picture-list">
+                          <minidenticon-svg username="${notification.user}" saturation="60" lightness="50"></minidenticon-svg>
+                        </div>
+                        <div class="flex-grow-1 ms-4 d-flex flex-column align-items-start">
+                          <h6>
+                            <b>${notification.user}</b>
+                          </h6>
+                          <small class="text-muted text-break">${lastMessage}</small>
+                        </div>
+                      </div>
+                    `
+                    }
+                    aElement.id = notification.name;
+                    aElement.href = '/chats/' + notification.name;
+                    aElement.classList.add('list-group-item', 'list-group-item-action', 'border-0');
+                    if (index % 2 === 0) {
+                      aElement.classList.add('bg-light');
+                    }
+
+                    // Remove the old a element
+                    var oldElement = document.getElementById(notification.name);
+                    if (oldElement) {
+                      oldElement.remove();
+                    }
+
+                    // Insert the updated a element as the first child
+                    parentElement.insertBefore(aElement, parentElement.firstChild);
+                  });
+                }
+                break;
+              case 'new_message_notification':
+                var existsSpan = aElement.contains(document.getElementById('chat-notif-counter'));
+
                 if (existsSpan) {
                   var notifSpan = document.getElementById('chat-notif-counter');
-                  notifSpan.textContent = data.unread_count;
+                  notifSpan.textContent = parseInt(notifSpan.textContent, 0) + 1
                 } else {
                   var spanElement = document.createElement('span');
 
                   spanElement.style.fontSize = "0.6rem";
                   spanElement.className = "position-absolute top-5 start-150 translate-middle badge rounded-pill bg-danger";
-                  spanElement.textContent = data.unread_count;
+                  spanElement.textContent = 1;
                   spanElement.id = "chat-notif-counter";
 
                   aElement.appendChild(spanElement);
                 }
-              } else {
-                if (existsSpan) {
-                  var notifSpan = document.getElementById('chat-notif-counter');
-                  aElement.removeChild(notifSpan);
+
+                if (window.location.href.indexOf('chats') > -1) {
+                  convsNotif = data.conv_notifications.reverse();
+
+                  // Get the parent element
+                  var parentElement = document.getElementById('chat-list'); // replace 'parent-id' with the actual id of the parent element
+
+                  // Loop through each notification
+                  convsNotif.forEach(function(notification, index) {
+                    // Find the corresponding a element or create a new one
+                    aElement = document.createElement('a');
+                    lastMessage = notification.last_message;
+                    if (lastMessage.length > 15) {
+                      lastMessage = lastMessage.slice(0, 15) + '...';
+                    }
+
+                    if (notification.unread_count) {
+                      aElement.innerHTML = `
+                      <div class="d-flex align-items-center">
+                        <div class="user-picture-list">
+                          <minidenticon-svg username="${notification.user}" saturation="60" lightness="50"></minidenticon-svg>
+                        </div>
+                        <div class="flex-grow-1 ms-4 d-flex flex-column align-items-start">
+                          <h6>
+                            <b>${notification.user}</b>
+                          </h6>
+                          <small class="text-muted text-break">${lastMessage}</small>
+                        </div>
+                        <span class="badge text-bg-secondary">${notification.unread_count}</span>
+                      </div>
+                    `
+                    } else {
+                      aElement.innerHTML = `
+                      <div class="d-flex align-items-center">
+                        <div class="user-picture-list">
+                          <minidenticon-svg username="${notification.user}" saturation="60" lightness="50"></minidenticon-svg>
+                        </div>
+                        <div class="flex-grow-1 ms-4 d-flex flex-column align-items-start">
+                          <h6>
+                            <b>${notification.user}</b>
+                          </h6>
+                          <small class="text-muted text-break">${lastMessage}</small>
+                        </div>
+                      </div>
+                    `
+                    }
+                    aElement.id = notification.name;
+                    aElement.href = '/chats/' + notification.name;
+                    aElement.classList.add('list-group-item', 'list-group-item-action', 'border-0');
+                    if (index % 2 === 0) {
+                      aElement.classList.add('bg-light');
+                    }
+
+                    // Remove the old a element
+                    var oldElement = document.getElementById(notification.name);
+                    if (oldElement) {
+                      oldElement.remove();
+                    }
+
+                    // Insert the updated a element as the first child
+                    parentElement.insertBefore(aElement, parentElement.firstChild);
+                  });
                 }
-              }
-              if (window.location.href.indexOf('chats') > -1) {
-                convsNotif = data.conv_notifications.reverse();
 
-                // Get the parent element
-                var parentElement = document.getElementById('chat-list'); // replace 'parent-id' with the actual id of the parent element
-
-                // Loop through each notification
-                convsNotif.forEach(function(notification, index) {
-                  // Find the corresponding a element or create a new one
-                  aElement = document.createElement('a');
-                  lastMessage = notification.last_message;
-                  if (!lastMessage) {
-                    lastMessage = ''
-                  } else if (lastMessage.length > 15) {
-                    lastMessage = lastMessage.slice(0, 15) + '...';
-                  }
-
-                  if (notification.unread_count) {
-                    aElement.innerHTML = `
-                      <div class="d-flex align-items-center">
-                        <div class="user-picture-list">
-                          <minidenticon-svg username="${notification.user}" saturation="60" lightness="50"></minidenticon-svg>
-                        </div>
-                        <div class="flex-grow-1 ms-4 d-flex flex-column align-items-start">
-                          <h6>
-                            <b>${notification.user}</b>
-                          </h6>
-                          <small class="text-muted text-break">${lastMessage}</small>
-                        </div>
-                        <span class="badge text-bg-secondary">${notification.unread_count}</span>
-                      </div>
-                    `
-                  } else {
-                    aElement.innerHTML = `
-                      <div class="d-flex align-items-center">
-                        <div class="user-picture-list">
-                          <minidenticon-svg username="${notification.user}" saturation="60" lightness="50"></minidenticon-svg>
-                        </div>
-                        <div class="flex-grow-1 ms-4 d-flex flex-column align-items-start">
-                          <h6>
-                            <b>${notification.user}</b>
-                          </h6>
-                          <small class="text-muted text-break">${lastMessage}</small>
-                        </div>
-                      </div>
-                    `
-                  }
-                  aElement.id = notification.name;
-                  aElement.href = '/chats/' + notification.name;
-                  aElement.classList.add('list-group-item', 'list-group-item-action', 'border-0');
-                  if (index % 2 === 0) {
-                    aElement.classList.add('bg-light');
-                  }
-
-                  // Remove the old a element
-                  var oldElement = document.getElementById(notification.name);
-                  if (oldElement) {
-                    oldElement.remove();
-                  }
-
-                  // Insert the updated a element as the first child
-                  parentElement.insertBefore(aElement, parentElement.firstChild);
-                });
-              }
-              break;
-            case 'new_message_notification':
-              var existsSpan = aElement.contains(document.getElementById('chat-notif-counter'));
-
-              if (existsSpan) {
-                var notifSpan = document.getElementById('chat-notif-counter');
-                notifSpan.textContent = parseInt(notifSpan.textContent, 0) + 1
-              } else {
-                var spanElement = document.createElement('span');
-
-                spanElement.style.fontSize = "0.6rem";
-                spanElement.className = "position-absolute top-5 start-150 translate-middle badge rounded-pill bg-danger";
-                spanElement.textContent = 1;
-                spanElement.id = "chat-notif-counter";
-
-                aElement.appendChild(spanElement);
-              }
-
-              if (window.location.href.indexOf('chats') > -1) {
-                convsNotif = data.conv_notifications.reverse();
-
-                // Get the parent element
-                var parentElement = document.getElementById('chat-list'); // replace 'parent-id' with the actual id of the parent element
-
-                // Loop through each notification
-                convsNotif.forEach(function(notification, index) {
-                  // Find the corresponding a element or create a new one
-                  aElement = document.createElement('a');
-                  lastMessage = notification.last_message;
-                  if (lastMessage.length > 15) {
-                    lastMessage = lastMessage.slice(0, 15) + '...';
-                  }
-
-                  if (notification.unread_count) {
-                    aElement.innerHTML = `
-                      <div class="d-flex align-items-center">
-                        <div class="user-picture-list">
-                          <minidenticon-svg username="${notification.user}" saturation="60" lightness="50"></minidenticon-svg>
-                        </div>
-                        <div class="flex-grow-1 ms-4 d-flex flex-column align-items-start">
-                          <h6>
-                            <b>${notification.user}</b>
-                          </h6>
-                          <small class="text-muted text-break">${lastMessage}</small>
-                        </div>
-                        <span class="badge text-bg-secondary">${notification.unread_count}</span>
-                      </div>
-                    `
-                  } else {
-                    aElement.innerHTML = `
-                      <div class="d-flex align-items-center">
-                        <div class="user-picture-list">
-                          <minidenticon-svg username="${notification.user}" saturation="60" lightness="50"></minidenticon-svg>
-                        </div>
-                        <div class="flex-grow-1 ms-4 d-flex flex-column align-items-start">
-                          <h6>
-                            <b>${notification.user}</b>
-                          </h6>
-                          <small class="text-muted text-break">${lastMessage}</small>
-                        </div>
-                      </div>
-                    `
-                  }
-                  aElement.id = notification.name;
-                  aElement.href = '/chats/' + notification.name;
-                  aElement.classList.add('list-group-item', 'list-group-item-action', 'border-0');
-                  if (index % 2 === 0) {
-                    aElement.classList.add('bg-light');
-                  }
-
-                  // Remove the old a element
-                  var oldElement = document.getElementById(notification.name);
-                  if (oldElement) {
-                    oldElement.remove();
-                  }
-
-                  // Insert the updated a element as the first child
-                  parentElement.insertBefore(aElement, parentElement.firstChild);
-                });
-              }
-
-              break;
-            default:
-              break;
+                break;
+              default:
+                break;
+            }
           }
-        }
-      </script>
+        </script>
+      {% endif %}
     {% endblock inline_javascript %}
   </body>
 </html>
