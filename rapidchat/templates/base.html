@@ -179,7 +179,9 @@
                   // Find the corresponding a element or create a new one
                   aElement = document.createElement('a');
                   lastMessage = notification.last_message;
-                  if (lastMessage.length > 15) {
+                  if (!lastMessage) {
+                    lastMessage = ''
+                  } else if (lastMessage.length > 15) {
                     lastMessage = lastMessage.slice(0, 15) + '...';
                   }
 
