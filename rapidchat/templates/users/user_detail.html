@@ -7,25 +7,35 @@
   {{ object.username }}
 {% endblock title %}
 {% block content %}
-  <div class="container">
-    <div class="row">
-      <div class="col-sm-12">
-        <h2>{{ object.username }}</h2>
-        {% if object.name %}<p>{{ object.name }}</p>{% endif %}
-      </div>
-    </div>
-    {% if object == request.user %}
-      <!-- Action buttons -->
+  <script type="module">
+    import {
+      minidenticonSvg
+    } from 'https://cdn.jsdelivr.net/npm/minidenticons@4.2.0/minidenticons.min.js'
+  </script>
+  <div class="container d-flex justify-content-center align-items-center">
+    <div class="card p-3 rounded-4">
       <div class="row">
-        <div class="col-sm-12">
-          <a class="btn btn-primary" href="{% url 'users:update' %}" role="button">My Info</a>
-          <a class="btn btn-primary"
-             href="{% url 'account_email' %}"
-             role="button">E-Mail</a>
-          <!-- Your Stuff: Custom user template urls -->
+        <div class="col-sm-12 text-center">
+          <h2>{{ object.username }}</h2>
+          {% if object.name %}<p>{{ object.name }}</p>{% endif %}
+        </div>
+        <div class="user-picture mb-3">
+          <minidenticon-svg username="{{ user.username }}" saturation="60" lightness="50"></minidenticon-svg>
         </div>
       </div>
-      <!-- End Action buttons -->
-    {% endif %}
+      {% if object == request.user %}
+        <!-- Action buttons -->
+        <div class="row">
+          <div class="col-sm-12">
+            <a class="btn btn-primary" href="{% url 'users:update' %}" role="button">My Info</a>
+            <a class="btn btn-primary"
+               href="{% url 'account_email' %}"
+               role="button">E-Mail</a>
+            <!-- Your Stuff: Custom user template urls -->
+          </div>
+        </div>
+        <!-- End Action buttons -->
+      {% endif %}
+    </div>
   </div>
 {% endblock content %}
