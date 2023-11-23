@@ -238,7 +238,6 @@ form {
 .chat-messages {
     display: flex;
     flex-direction: column;
-    max-height: 68vh;
     overflow-y: scroll;
 }
 
@@ -308,7 +307,7 @@ form {
   width: 2.5rem;
 }
 .full-height {
-    height: 90vh;
+    height: 88vh;
 }
 .full-width {
   width: 100% !important;

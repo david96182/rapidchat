@@ -49,6 +49,21 @@
     </div>
   </div>
   <script>
+    window.addEventListener('DOMContentLoaded', function() {
+      adjustChatMessagesHeight();
+
+      window.addEventListener('resize', adjustChatMessagesHeight);
+
+      function adjustChatMessagesHeight() {
+        var chatListHeight = document.querySelector('.card').offsetHeight;
+        var chatHeaderHeight = document.querySelector('.border-bottom').offsetHeight;
+        var inputGroupHeight = document.querySelector('.flex-grow-0').offsetHeight;
+        var chatMessages = document.getElementById('chat-messages');
+
+        var maxChatHeight = chatListHeight - chatHeaderHeight - inputGroupHeight;
+        chatMessages.style.maxHeight = maxChatHeight + 'px';
+      }
+    });
     let currentPage = 1;
     let moreResults = true;
     let typingTimeout;
