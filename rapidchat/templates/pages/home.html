@@ -1,1 +1,30 @@
 {% extends "base.html" %}
+
+{% load static i18n %}
+
+{% block content %}
+  <div class="container p-5">
+    <div class="row">
+      <!-- Logo Section -->
+      <div class="col-md-6 d-flex justify-content-center align-items-center">
+        <img src="{% static 'images/logo.png' %}"
+             alt="Your Image Description"
+             class="img-fluid"
+             width="400"
+             height="500" />
+      </div>
+      <!-- Text and Get Started Button Section -->
+      <div class="col-md-6 d-flex flex-column justify-content-center align-items-center">
+        <h2>Welcome to RapidChat!</h2>
+        <p>
+          RapidChat is a real-time chat application designed for seamless and instant communication. Experience the difference of a platform designed with you in mind.
+        </p>
+        {% if request.user.is_authenticated %}
+          <a href="{% url 'chats:chats' %}" class="btn btn-primary">Start messaging</a>
+        {% else %}
+          <a href="{% url 'account_signup' %}" class="btn btn-primary">Get Started</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+{% endblock content %}
