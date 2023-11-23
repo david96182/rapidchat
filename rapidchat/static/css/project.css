@@ -20,6 +20,11 @@ body {
   background-color: #E6E6E6;
 }
 
+.text-justify {
+  text-align: justify !important;
+  text-justify: inter-word !important;
+}
+
 /* forms */
 form {
   margin: 0 auto;
